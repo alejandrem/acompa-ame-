@@ -1,28 +1,108 @@
 import React, { useEffect, useState } from 'react';
-import { Animated, Easing, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { C } from '../theme/colors';
 import { s } from '../styles/styles';
-import { H, W } from '../constants/layout';
-import Mapa from '../components/Mapa';
+import { H } from '../constants/layout';
+import * as Location from 'expo-location';
+
+// Ruta de ejemplo alrededor de Puebla capital
+const RUTA = [
+  { latitude: 19.0436, longitude: -98.2000 },
+  { latitude: 19.0436, longitude: -98.1981 },
+  { latitude: 19.0444, longitude: -98.1981 },
+  { latitude: 19.0444, longitude: -98.1970 },
+  { latitude: 19.0436, longitude: -98.1970 },
+  { latitude: 19.0429, longitude: -98.1970 },
+];
+
+const DESTINO = { latitude: 19.0429, longitude: -98.1970 };
+
+function interpolarRuta(t) {
+  // t en [0,1]
+  const segs = [];
+  let total = 0;
+  for (let i = 0; i < RUTA.length - 1; i++) {
+    const d = Math.hypot(RUTA[i + 1].latitude - RUTA[i].latitude, RUTA[i + 1].longitude - RUTA[i].longitude);
+    segs.push(d);
+    total += d;
+  }
+  let d = t * total;
+  for (let i = 0; i < segs.length; i++) {
+    if (d <= segs[i]) {
+      const k = segs[i] === 0 ? 0 : d / segs[i];
+      return {
+        latitude: RUTA[i].latitude + (RUTA[i + 1].latitude - RUTA[i].latitude) * k,
+        longitude: RUTA[i].longitude + (RUTA[i + 1].longitude - RUTA[i].longitude) * k,
+      };
+    }
+    d -= segs[i];
+  }
+  return RUTA[RUTA.length - 1];
+}
 
 export default function Seguir({ c, cerrar }) {
-  const [av] = useState(() => new Animated.Value(0));
   const [min, setMin] = useState(6);
+  const [pos, setPos] = useState(RUTA[0]);
+  const [permiso, setPermiso] = useState(false);
+  const [miUbicacion, setMiUbicacion] = useState(null);
+
   useEffect(() => {
-    Animated.timing(av, { toValue: 1, duration: 12000, easing: Easing.inOut(Easing.quad), useNativeDriver: false }).start();
-    const t = setInterval(() => setMin((m) => (m > 1 ? m - 1 : 1)), 2500);
-    return () => clearInterval(t);
-  }, [av]);
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        const ok = status === 'granted';
+        setPermiso(ok);
+        if (ok) {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          setMiUbicacion({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+        }
+      } catch (_e) {
+        setPermiso(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const inicio = Date.now();
+    const duracion = 12000;
+    const t = setInterval(() => {
+      const p = Math.min(1, (Date.now() - inicio) / duracion);
+      setPos(interpolarRuta(p));
+      if (p >= 1) clearInterval(t);
+    }, 120);
+    const m = setInterval(() => setMin((x) => (x > 1 ? x - 1 : 1)), 2500);
+    return () => { clearInterval(t); clearInterval(m); };
+  }, []);
+
   const alto = H * 0.62;
+  const region = {
+    latitude: 19.0436,
+    longitude: -98.1985,
+    latitudeDelta: 0.012,
+    longitudeDelta: 0.012,
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <Mapa alto={alto} pines={[{ x: 0.78, y: 0.62, e: '🏠', color: C.coral }]}>
-        <View style={{ position: 'absolute', left: '14%', top: '20%', width: '66%', height: 5, backgroundColor: C.teal }} />
-        <View style={{ position: 'absolute', left: '78%', top: '20%', width: 5, height: '44%', backgroundColor: C.teal }} />
-        <Animated.View style={[s.pin, { borderColor: C.teal, left: av.interpolate({ inputRange: [0, 1], outputRange: [0.1 * (W - 46), 0.78 * (W - 46)] }), top: av.interpolate({ inputRange: [0, 1], outputRange: [0.17 * alto, 0.62 * alto] }) }]}>
-          <Image source={{ uri: c.a.foto }} style={s.pinImg} />
-        </Animated.View>
-      </Mapa>
+      <View style={{ height: alto, overflow: 'hidden' }}>
+        <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation={permiso} userInterfaceStyle="light">
+          <Polyline coordinates={RUTA} strokeColor={C.teal} strokeWidth={5} />
+          <Marker coordinate={DESTINO} anchor={{ x: 0.5, y: 0.5 }}>
+            <Text style={{ fontSize: 22 }}>🏠</Text>
+          </Marker>
+          <Marker coordinate={pos} anchor={{ x: 0.5, y: 0.5 }}>
+            <View style={[s.pin, { borderColor: C.teal }]}>
+              <Image source={{ uri: c.a.foto }} style={s.pinImg} />
+            </View>
+          </Marker>
+          {miUbicacion && (
+            <Marker coordinate={miUbicacion} anchor={{ x: 0.5, y: 0.5 }} title="Tú">
+              <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#4285F4', borderWidth: 3, borderColor: C.white }} />
+            </Marker>
+          )}
+        </MapView>
+      </View>
       <TouchableOpacity onPress={cerrar} style={[s.atras, { position: 'absolute', top: 46, left: 16, backgroundColor: C.white }]}>
         <Text style={{ fontSize: 20 }}>←</Text>
       </TouchableOpacity>
@@ -34,7 +114,7 @@ export default function Seguir({ c, cerrar }) {
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={s.nom}>{c.a.nombre}</Text>
             <Text style={{ color: C.teal, fontWeight: '700' }}>✔ Verificado · ★ {c.a.rating}</Text>
-            <Text style={s.sub}>{c.act.n} · {c.h} horas</Text>
+            <Text style={s.sub}>{c.act.n} · {c.h} horas · ubicación en vivo</Text>
           </View>
         </View>
       </View>
