@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+// safe-area-context removed for build compatibility
 import { C } from './src/theme/colors';
 import { s } from './src/styles/styles';
 import { ACOMP, ACTS, dias, money } from './src/data/mockData';
@@ -28,6 +28,7 @@ export default function App() {
   const [citas, setCitas] = useState([
     {
       id: 0, a: ACOMP[3], dia: 'Lun 26 oct', k: -2, hora: '10:00', h: 4, act: ACTS[0], lugar: 'Banco', total: 660, estado: 'Completada', animo: 'Muy contenta 😊', entrega: 'con su hija a las 14:05',
+      fotos: ['https://picsum.photos/seed/banco1/600/600', 'https://picsum.photos/seed/banco2/600/600', 'https://picsum.photos/seed/banco3/600/600'],
       bit: [
         { h: '10:00', t: 'Pasé por ella a su casa. Salió de buen humor.' },
         { h: '10:40', t: 'Fuimos al banco a cobrar su pensión. Sin fila larga.' },
@@ -72,7 +73,8 @@ export default function App() {
       { h: `${p(sh + 1)}:30`, t: 'Pasamos por un helado 🍦 y platicamos un rato.' },
       { h: `${p(sh + c.h)}:00`, t: 'Lo entregué en casa con su familia. Todo en orden.' },
     ];
-    setCitas((prev) => prev.map((x) => (x.id === id ? { ...x, estado: 'Completada', bit, animo: 'Contento 😊', entrega: `a las ${p(sh + c.h)}:00` } : x)));
+    const fotos = [`https://picsum.photos/seed/${c.act.id}a/600/600`, `https://picsum.photos/seed/${c.act.id}b/600/600`, `https://picsum.photos/seed/${c.act.id}c/600/600`];
+    setCitas((prev) => prev.map((x) => (x.id === id ? { ...x, estado: 'Completada', bit, animo: 'Contento 😊', entrega: `a las ${p(sh + c.h)}:00`, fotos } : x)));
     aviso('Servicio terminado. Ya está la bitácora.');
   };
 
@@ -87,10 +89,9 @@ export default function App() {
   const finSplash = useCallback(() => setFase('acceso'), []);
   if (fase === 'splash') return <Splash fin={finSplash} />;
   return (
-    <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <StatusBar barStyle="dark-content" />
-        <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <StatusBar barStyle="dark-content" />
+      <View style={{ flex: 1 }}>
           {fase === 'acceso' ? <Acceso entrar={(x) => { setU(x); setFase('terminos'); }} />
             : fase === 'terminos' ? <Terminos onAceptar={() => setFase('app')} />
             : res ? <Reservar pre={res.pre} preAct={res.act} saldo={saldo} cerrar={() => setRes(null)} confirmar={confirmar} aviso={aviso} irMonedero={() => { setRes(null); setTab('monedero'); }} />
@@ -115,9 +116,8 @@ export default function App() {
                   </View>
                 </>}
           {toast && <View style={[s.toast, { backgroundColor: toast.tipo === 'error' ? C.red : C.ink }]}><Text style={{ color: C.white, fontWeight: '700', textAlign: 'center' }}>{toast.t}</Text></View>}
-        </SafeAreaView>
+        </View>
       </View>
-    </SafeAreaProvider>
   );
 }
 

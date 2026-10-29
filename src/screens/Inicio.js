@@ -110,7 +110,7 @@ export default function Inicio({ u, citas, reservar, verMapa, facil, irA, aviso 
         )}
         {!facil && prox && (
           <TouchableOpacity style={s.proxima} onPress={() => verMapa(prox)} activeOpacity={0.85}>
-            <Image source={{ uri: prox.a.foto }} style={s.foto42} />
+            <Image source={prox.a.foto} style={s.foto42} />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={{ fontWeight: '800', color: C.ink }}>Próxima: {prox.dia}, {prox.hora}</Text>
               <Text style={s.sub}>{prox.a.nombre} — {prox.act.n}</Text>
@@ -125,7 +125,7 @@ export default function Inicio({ u, citas, reservar, verMapa, facil, irA, aviso 
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={cerrarPerfil} />
           <Animated.View style={[styles.modalCard, { transform: [{ translateY: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [400, 0] }) }] }]}>
             <View style={{ alignItems: 'center' }}>
-              <Image source={{ uri: perfil.foto }} style={styles.modalFoto} />
+              <Image source={perfil.foto} style={styles.modalFoto} />
               <Text style={styles.modalNombre}>{perfil.nombre}</Text>
               <Text style={s.sub}>{perfil.edad} años · ★ {perfil.rating} · {perfil.serv} servicios</Text>
             </View>

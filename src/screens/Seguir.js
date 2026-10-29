@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { C } from '../theme/colors';
 import { s } from '../styles/styles';
 import { H } from '../constants/layout';
@@ -86,14 +86,15 @@ export default function Seguir({ c, cerrar }) {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ height: alto, overflow: 'hidden' }}>
-        <MapView style={{ flex: 1 }} initialRegion={region} showsUserLocation={permiso} userInterfaceStyle="light">
+        <MapView style={{ flex: 1 }} mapType="none" initialRegion={region} showsUserLocation={permiso} userInterfaceStyle="light" renderToHardwareTextureAndroid={false}>
+          <UrlTile urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maximumZ={19} />
           <Polyline coordinates={RUTA} strokeColor={C.teal} strokeWidth={5} />
           <Marker coordinate={DESTINO} anchor={{ x: 0.5, y: 0.5 }}>
             <Text style={{ fontSize: 22 }}>🏠</Text>
           </Marker>
           <Marker coordinate={pos} anchor={{ x: 0.5, y: 0.5 }}>
             <View style={[s.pin, { borderColor: C.teal }]}>
-              <Image source={{ uri: c.a.foto }} style={s.pinImg} />
+              <Image source={c.a.foto} style={s.pinImg} />
             </View>
           </Marker>
           {miUbicacion && (
@@ -110,7 +111,7 @@ export default function Seguir({ c, cerrar }) {
         <View style={s.asa} />
         <Text style={s.h2}>Llega en {min} min</Text>
         <View style={s.proxima}>
-          <Image source={{ uri: c.a.foto }} style={s.foto64} />
+          <Image source={c.a.foto} style={s.foto64} />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={s.nom}>{c.a.nombre}</Text>
             <Text style={{ color: C.teal, fontWeight: '700' }}>✔ Verificado · ★ {c.a.rating}</Text>

@@ -2,31 +2,36 @@ import React, { useState } from 'react';
 import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { C } from '../theme/colors';
 import { s } from '../styles/styles';
-import { ACOMP, ACTS, HORAS, PRECIO, dias, money } from '../data/mockData';
+import { ACOMP, ACTS, PRECIO, dias, money } from '../data/mockData';
 import Btn from '../components/ui/Btn';
-import Pill from '../components/ui/Pill';
 import Fila from '../components/ui/Fila';
 
 export default function Reservar({ pre, preAct, saldo, cerrar, confirmar, aviso, irMonedero }) {
   const [ds] = useState(() => dias());
   const [paso, setPaso] = useState(pre ? 1 : 0);
   const [ac, setAc] = useState(pre || null);
-  const [dia, setDia] = useState(0);
-  const [hora, setHora] = useState(null);
-  const [h, setH] = useState(2);
+  const dia = 0;
+  const [horaH, setHoraH] = useState(10);
+  const [horaM, setHoraM] = useState(0);
+  const [durH, setDurH] = useState(2);
+  const [durM, setDurM] = useState(0);
   const [act, setAct] = useState(preAct || ACTS[0]);
   const [lugar, setLugar] = useState('');
   const comp = ACOMP.find((x) => x.id === ac) || null;
-  const total = h * PRECIO;
-  const titulos = ['Elige a tu acompañante', 'Fecha y duración', '¿Qué van a hacer?', 'Confirma y paga'];
+  const hora = `${String(horaH).padStart(2, '0')}:${String(horaM).padStart(2, '0')}`;
+  const duracionMin = durH * 60 + durM;
+  const total = (duracionMin / 60) * PRECIO;
+  const titulos = ['Elige a tu acompañante', 'Hora y Duración', '¿Qué van a hacer?', 'Confirma y paga'];
 
   const sig = () => {
     if (paso === 0 && !ac) return aviso('Elige un acompañante.', 'error');
-    if (paso === 1 && !hora) return aviso('Elige una hora.', 'error');
+    if (paso === 1) {
+      if (duracionMin < 120) return aviso('La duración mínima es de 2 horas.', 'error');
+    }
     if (paso < 3) return setPaso(paso + 1);
     if (saldo < total) return aviso('Saldo insuficiente. Recarga tu monedero.', 'error', irMonedero);
     const elegido = ACOMP.find((x) => x.id === ac);
-    confirmar({ id: Date.now(), a: elegido, dia: `${ds[dia].d} ${ds[dia].n} ${ds[dia].m}`, k: dia, hora, h, act, lugar: lugar || 'Domicilio del adulto mayor', total, estado: 'Confirmada' });
+    confirmar({ id: Date.now(), a: elegido, dia: `${ds[dia].d} ${ds[dia].n} ${ds[dia].m}`, k: dia, hora, h: duracionMin / 60, duracion: `${durH}:${String(durM).padStart(2, '0')}`, act, lugar: lugar || 'Domicilio del adulto mayor', total, estado: 'Confirmada' });
   };
 
   return (
@@ -44,7 +49,7 @@ export default function Reservar({ pre, preAct, saldo, cerrar, confirmar, aviso,
 
         {paso === 0 && ACOMP.map((x) => (
           <TouchableOpacity key={x.id} onPress={() => setAc(x.id)} activeOpacity={0.85} style={[s.fila, ac === x.id && { borderColor: C.teal, backgroundColor: C.tealSoft }]}>
-            <Image source={{ uri: x.foto }} style={s.foto64} />
+            <Image source={x.foto} style={s.foto64} />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={s.nom}>{x.nombre}</Text>
               <Text style={s.sub}>★ {x.rating} · {x.serv} servicios · {x.edad} años</Text>
@@ -56,22 +61,40 @@ export default function Reservar({ pre, preAct, saldo, cerrar, confirmar, aviso,
 
         {paso === 1 && (
           <>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {ds.map((d) => (
-                <TouchableOpacity key={d.k} onPress={() => setDia(d.k)} style={[s.dia, dia === d.k && { backgroundColor: C.ink }]}>
-                  <Text style={[s.sub, dia === d.k && { color: C.sand2 }]}>{d.d}</Text>
-                  <Text style={[s.diaN, dia === d.k && { color: C.white }]}>{d.n}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <Text style={s.lbl}>Hora de inicio</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>{HORAS.map((x) => <Pill key={x} t={x} on={hora === x} onPress={() => setHora(x)} />)}</View>
-            <Text style={s.lbl}>Duración (mínimo 2 horas)</Text>
-            <View style={s.dur}>
-              <TouchableOpacity style={s.mas} onPress={() => setH(Math.max(2, h - 1))}><Text style={s.masT}>−</Text></TouchableOpacity>
-              <View style={{ alignItems: 'center' }}><Text style={{ fontSize: 32, fontWeight: '800', color: C.ink }}>{h} h</Text><Text style={s.sub}>{money(total)}</Text></View>
-              <TouchableOpacity style={s.mas} onPress={() => setH(Math.min(10, h + 1))}><Text style={s.masT}>+</Text></TouchableOpacity>
+            <Text style={[s.lbl, { textAlign: 'center', fontSize: 18 }]}>🕐 Hora de inicio</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, backgroundColor: C.white, borderRadius: 18, paddingVertical: 12, borderWidth: 1, borderColor: C.line }}>
+              <View style={{ alignItems: 'center', marginHorizontal: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: C.grey, marginBottom: 4 }}>HORA</Text>
+                <TouchableOpacity style={s.mas} onPress={() => setHoraH((v) => (v > 0 ? v - 1 : 23))}><Text style={s.masT}>−</Text></TouchableOpacity>
+                <TextInput style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginVertical: 6, width: 60, textAlign: 'center', backgroundColor: C.sand, borderRadius: 12, paddingVertical: 8, borderWidth: 1, borderColor: C.line }} keyboardType="numeric" value={String(horaH)} onChangeText={(v) => { const n = parseInt(v, 10); if (!isNaN(n) && n >= 0 && n <= 23) setHoraH(n); }} />
+                <TouchableOpacity style={s.mas} onPress={() => setHoraH((v) => (v < 23 ? v + 1 : 0))}><Text style={s.masT}>+</Text></TouchableOpacity>
+              </View>
+              <Text style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginHorizontal: 8 }}>:</Text>
+              <View style={{ alignItems: 'center', marginHorizontal: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: C.grey, marginBottom: 4 }}>MIN</Text>
+                <TouchableOpacity style={s.mas} onPress={() => setHoraM((v) => (v >= 15 ? v - 15 : 45))}><Text style={s.masT}>−</Text></TouchableOpacity>
+                <TextInput style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginVertical: 6, width: 60, textAlign: 'center', backgroundColor: C.sand, borderRadius: 12, paddingVertical: 8, borderWidth: 1, borderColor: C.line }} keyboardType="numeric" value={String(horaM).padStart(2, '0')} onChangeText={(v) => { const n = parseInt(v, 10); if (!isNaN(n) && n >= 0 && n <= 59) setHoraM(n); }} />
+                <TouchableOpacity style={s.mas} onPress={() => setHoraM((v) => (v <= 45 ? v + 15 : 0))}><Text style={s.masT}>+</Text></TouchableOpacity>
+              </View>
             </View>
+
+            <Text style={[s.lbl, { textAlign: 'center', fontSize: 18 }]}>⏱️ Duración (mínimo 2 horas)</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16, backgroundColor: C.white, borderRadius: 18, paddingVertical: 12, borderWidth: 1, borderColor: C.line }}>
+              <View style={{ alignItems: 'center', marginHorizontal: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: C.grey, marginBottom: 4 }}>HORAS</Text>
+                <TouchableOpacity style={s.mas} onPress={() => setDurH((v) => (v > 0 ? v - 1 : 0))}><Text style={s.masT}>−</Text></TouchableOpacity>
+                <TextInput style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginVertical: 6, width: 60, textAlign: 'center', backgroundColor: C.sand, borderRadius: 12, paddingVertical: 8, borderWidth: 1, borderColor: C.line }} keyboardType="numeric" value={String(durH)} onChangeText={(v) => { const n = parseInt(v, 10); if (!isNaN(n) && n >= 0) setDurH(n); }} />
+                <TouchableOpacity style={s.mas} onPress={() => setDurH((v) => v + 1)}><Text style={s.masT}>+</Text></TouchableOpacity>
+              </View>
+              <Text style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginHorizontal: 8 }}>:</Text>
+              <View style={{ alignItems: 'center', marginHorizontal: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: C.grey, marginBottom: 4 }}>MIN</Text>
+                <TouchableOpacity style={s.mas} onPress={() => setDurM((v) => (v >= 15 ? v - 15 : 45))}><Text style={s.masT}>−</Text></TouchableOpacity>
+                <TextInput style={{ fontSize: 34, fontWeight: '800', color: C.ink, marginVertical: 6, width: 60, textAlign: 'center', backgroundColor: C.sand, borderRadius: 12, paddingVertical: 8, borderWidth: 1, borderColor: C.line }} keyboardType="numeric" value={String(durM).padStart(2, '0')} onChangeText={(v) => { const n = parseInt(v, 10); if (!isNaN(n) && n >= 0 && n <= 59) setDurM(n); }} />
+                <TouchableOpacity style={s.mas} onPress={() => setDurM((v) => (v <= 45 ? v + 15 : 0))}><Text style={s.masT}>+</Text></TouchableOpacity>
+              </View>
+            </View>
+            <Text style={[s.sub, { textAlign: 'center', marginTop: 8, fontWeight: '700' }]}>💰 Total: {money(total)}</Text>
           </>
         )}
 
@@ -93,7 +116,7 @@ export default function Reservar({ pre, preAct, saldo, cerrar, confirmar, aviso,
         {paso === 3 && comp && (
           <>
             <View style={s.resumen}>
-              <Image source={{ uri: comp.foto }} style={s.foto64} />
+              <Image source={comp.foto} style={s.foto64} />
               <View style={{ marginLeft: 12, flex: 1 }}><Text style={s.nom}>{comp.nombre}</Text><Text style={s.sub}>{comp.bio}</Text></View>
             </View>
             <View style={s.resumen2}>
@@ -101,7 +124,7 @@ export default function Reservar({ pre, preAct, saldo, cerrar, confirmar, aviso,
               <Fila a="Hora" b={hora} />
               <Fila a="Actividad" b={`${act.i} ${act.n}`} />
               <Fila a="Lugar" b={lugar || 'Domicilio'} />
-              <Fila a={`${h} h × $${PRECIO}`} b={money(total)} />
+              <Fila a={`Duración ${durH}:${String(durM).padStart(2, '0')} × $${PRECIO}/h`} b={money(total)} />
               <View style={{ height: 1, backgroundColor: C.line, marginVertical: 6 }} />
               <Fila a="Monedero" b={money(saldo)} />
               <Fila a="Total a pagar" b={money(total)} fuerte />
