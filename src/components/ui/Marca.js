@@ -1,12 +1,14 @@
 import React from 'react';
-import { View } from 'react-native';
-import { C } from '../../theme/colors';
+import { Image, View } from 'react-native';
 
-export default function Marca({ size = 28, color = C.ink }) {
+export default function Marca({ size = 28 }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: C.coral }} />
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, marginLeft: -size * 0.35 }} />
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Image
+        source={require('../../../assets/logo.jpeg')}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+        resizeMode="cover"
+      />
     </View>
   );
 }

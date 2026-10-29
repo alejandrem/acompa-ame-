@@ -1,5 +1,5 @@
 // Datos ficticios de la demo.
-export const PRECIO = 120;
+export const PRECIO = 165;
 
 export const ACOMP = [
   { id: 1, nombre: 'Carlos Pérez', edad: 34, foto: 'https://i.pravatar.cc/200?img=12', rating: 4.9, serv: 214, tags: ['Paciente', 'Trámites', 'Maneja auto'], bio: 'Estudió gerontología. Le encanta platicar de música y futbol.', x: 0.22, y: 0.3 },

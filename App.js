@@ -27,7 +27,7 @@ export default function App() {
   const [facil, setFacil] = useState(false);
   const [citas, setCitas] = useState([
     {
-      id: 0, a: ACOMP[3], dia: 'Lun 26 oct', k: -2, hora: '10:00', h: 4, act: ACTS[0], lugar: 'Banco', total: 480, estado: 'Completada', animo: 'Muy contenta 😊', entrega: 'con su hija a las 14:05',
+      id: 0, a: ACOMP[3], dia: 'Lun 26 oct', k: -2, hora: '10:00', h: 4, act: ACTS[0], lugar: 'Banco', total: 660, estado: 'Completada', animo: 'Muy contenta 😊', entrega: 'con su hija a las 14:05',
       bit: [
         { h: '10:00', t: 'Pasé por ella a su casa. Salió de buen humor.' },
         { h: '10:40', t: 'Fuimos al banco a cobrar su pensión. Sin fila larga.' },
@@ -36,8 +36,8 @@ export default function App() {
         { h: '14:05', t: 'La entregué en casa con su hija. Todo en orden.' },
       ]
     },
-    { id: 1, a: ACOMP[0], dia: `${dias()[1].d} ${dias()[1].n} ${dias()[1].m}`, k: 1, hora: '10:00', h: 3, act: ACTS[1], lugar: 'Hospital Ángeles', total: 360, estado: 'Confirmada' }]);
-  const [movs, setMovs] = useState([{ id: 1, c: 'Recarga inicial', f: 'Hoy', monto: 1160 }, { id: 2, c: 'Cita con Carlos Pérez', f: 'Hoy', monto: -360 }]);
+    { id: 1, a: ACOMP[0], dia: `${dias()[1].d} ${dias()[1].n} ${dias()[1].m}`, k: 1, hora: '10:00', h: 3, act: ACTS[1], lugar: 'Hospital Ángeles', total: 495, estado: 'Confirmada' }]);
+  const [movs, setMovs] = useState([{ id: 1, c: 'Recarga inicial', f: 'Hoy', monto: 1160 }, { id: 2, c: 'Cita con Carlos Pérez', f: 'Hoy', monto: -495 }]);
 
   const aviso = (t, tipo = 'ok', fn) => { setToast({ t, tipo }); setTimeout(() => { setToast(null); if (fn) fn(); }, 1700); };
 

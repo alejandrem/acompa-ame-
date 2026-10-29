@@ -6,8 +6,8 @@ import { ACOMP, ACTS } from '../data/mockData';
 import { H } from '../constants/layout';
 import Mapa from '../components/Mapa';
 
-const EXPANDED_TOP = H - 420;
-const COLLAPSED_TOP = H - 150;
+const EXPANDED_TOP = H - 470;
+const COLLAPSED_TOP = H - 170;
 
 export default function Inicio({ u, citas, reservar, verMapa, facil, irA, aviso }) {
   const [sube] = useState(() => new Animated.Value(0));
