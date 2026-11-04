@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import * as Location from 'expo-location';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { iconoPin, ICONO_YO } from './iconosMapa';
 import { C } from '../theme/colors';
 import { W } from '../constants/layout';
 import 'leaflet/dist/leaflet.css';
@@ -47,6 +48,15 @@ function toLatLng(p, userLoc) {
   return [coord.latitude, coord.longitude];
 }
 
+// Seguir a la ubicación del usuario cuando llega (MapContainer solo usa center al montar).
+function Recentrar({ lat, lng, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng], zoom, { animate: true });
+  }, [map, lat, lng, zoom]);
+  return null;
+}
+
 export default function Mapa({ pines = [], alto, region = REGION_PUEBLA_TLAXCALA, children, showUserLocation = true, onPinPress }) {
   const [permiso, setPermiso] = useState(false);
   const [userLoc, setUserLoc] = useState(null);
@@ -68,12 +78,13 @@ export default function Mapa({ pines = [], alto, region = REGION_PUEBLA_TLAXCALA
   }, []);
 
   const center = userLoc ? [userLoc.latitude, userLoc.longitude] : [19.18, -98.22];
+  const zoom = userLoc ? 13 : 11;
 
   return (
     <View style={{ width: W, height: alto }}>
       <MapContainer
         center={center}
-        zoom={14}
+        zoom={zoom}
         scrollWheelZoom={true}
         style={{ width: '100%', height: '100%' }}
       >
@@ -81,21 +92,21 @@ export default function Mapa({ pines = [], alto, region = REGION_PUEBLA_TLAXCALA
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <Recentrar lat={center[0]} lng={center[1]} zoom={zoom} />
         {pines.map((p, i) => {
           const pos = toLatLng(p, userLoc);
           if (!pos) return null;
           return (
-            <Marker key={i} position={pos} onClick={() => onPinPress && onPinPress(p)}>
-              {p.foto && (
-                <Popup>
-                  <Image source={p.foto} style={{ width: 50, height: 50, borderRadius: 25 }} />
-                </Popup>
-              )}
-            </Marker>
+            <Marker
+              key={i}
+              position={pos}
+              icon={iconoPin(p)}
+              eventHandlers={{ click: () => onPinPress && onPinPress(p) }}
+            />
           );
         })}
         {userLoc && (
-          <Marker position={userLoc}>
+          <Marker position={[userLoc.latitude, userLoc.longitude]} icon={ICONO_YO}>
             <Popup>
               <Text style={{ color: C.ink }}>Tu ubicación</Text>
             </Popup>

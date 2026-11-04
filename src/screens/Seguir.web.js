@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import { iconoPin, ICONO_YO } from '../components/iconosMapa';
 import { C } from '../theme/colors';
 import { s } from '../styles/styles';
 import * as Location from 'expo-location';
@@ -40,7 +41,9 @@ function interpolarRuta(t) {
 
 function Follower({ pos }) {
   const map = useMap();
-  if (pos) map.flyTo(pos, 17, { duration: 0.5 });
+  useEffect(() => {
+    if (pos) map.flyTo(pos, 17, { duration: 0.5 });
+  }, [map, pos]);
   return null;
 }
 
@@ -78,18 +81,13 @@ export default function Seguir({ c, cerrar }) {
     return () => { clearInterval(t); clearInterval(m); };
   }, []);
 
-  const region = {
-    latitude: 19.0436,
-    longitude: -98.1985,
-    latitudeDelta: 0.012,
-    longitudeDelta: 0.012,
-  };
+  const CENTRO = [19.0436, -98.1985];
 
   return (
     <View style={{ flex: 1 }}>
       <View style={{ height: '100%', position: 'relative' }}>
         <MapContainer
-          center={region}
+          center={CENTRO}
           zoom={17}
           scrollWheelZoom={true}
           style={{ width: '100%', height: '100%' }}
@@ -99,23 +97,20 @@ export default function Seguir({ c, cerrar }) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Polyline positions={RUTA} pathOptions={{ color: C.teal, weight: 5 }} />
-          <Marker position={DESTINO}>
+          <Marker position={DESTINO} icon={iconoPin({ e: '🏠' })}>
             <Popup>Destino</Popup>
-            <div style={{ fontSize: 22 }}>🏠</div>
           </Marker>
-          <Marker position={pos}>
+          <Marker position={pos} icon={iconoPin({ foto: c.a.foto })}>
             <Popup>Acompañante</Popup>
-            <Image source={{ uri: c.a.foto }} style={styles.pinImg} />
           </Marker>
           {miUbicacion && (
-            <Marker position={miUbicacion}>
+            <Marker position={miUbicacion} icon={ICONO_YO}>
               <Popup>Tu ubicación</Popup>
-              <div style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#4285F4', borderWidth: 3, borderColor: 'white' }} />
             </Marker>
           )}
           <Follower pos={pos} />
         </MapContainer>
-        <TouchableOpacity onPress={cerrar} style={[styles.atras, { position: 'absolute', top: 16, left: 16, backgroundColor: C.white, zIndex: 100 }]}>
+        <TouchableOpacity onPress={cerrar} style={[styles.atras, { position: 'absolute', top: 16, left: 16, backgroundColor: C.white, zIndex: 1000 }]}>
           <Text style={{ fontSize: 20 }}>←</Text>
         </TouchableOpacity>
       </View>
@@ -124,6 +119,5 @@ export default function Seguir({ c, cerrar }) {
 }
 
 const styles = StyleSheet.create({
-  pinImg: { width: 40, height: 40, borderRadius: 20 },
   atras: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center' },
 });
