@@ -1,5 +1,5 @@
 // Datos ficticios de la demo.
-export const PRECIO = 165;
+export const PRECIO = 400; // $/hora → 2h mínimo = $800 MXN
 
 export const ACOMP = [
   { id: 1, nombre: 'Valeria Huerta Hernández', edad: 34, foto: require('../../assets/foto de perfil.webp'), rating: 4.9, serv: 214, tags: ['Paciente', 'Trámites', 'Maneja auto'], bio: 'Estudió gerontología. Le encanta platicar de música y futbol.', x: 0.22, y: 0.3 },
