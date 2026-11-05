@@ -7,7 +7,6 @@ import { ACOMP, ACTS, dias, money } from './src/data/mockData';
 import Marca from './src/components/ui/Marca';
 import Splash from './src/screens/Splash';
 import Acceso from './src/screens/Acceso';
-import Terminos from './src/screens/Terminos';
 import Inicio from './src/screens/Inicio';
 import Reservar from './src/screens/Reservar';
 import Agenda from './src/screens/Agenda';
@@ -92,8 +91,7 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <StatusBar barStyle="dark-content" />
       <View style={{ flex: 1 }}>
-          {fase === 'acceso' ? <Acceso entrar={(x) => { setU(x); setFase('terminos'); }} />
-            : fase === 'terminos' ? <Terminos onAceptar={() => setFase('app')} />
+          {fase === 'acceso' ? <Acceso entrar={(x) => { setU(x); setFase('app'); }} />
             : res ? <Reservar pre={res.pre} preAct={res.act} saldo={saldo} cerrar={() => setRes(null)} confirmar={confirmar} aviso={aviso} irMonedero={() => { setRes(null); setTab('monedero'); }} />
               : mapa ? <Seguir c={mapa} cerrar={() => setMapa(null)} />
                 : <>
